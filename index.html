@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+
+	<!-- Three.js core -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- GLTFLoader (dùng examples/js thay vì modules/) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+	<script type="importmap"> { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/" } } </script>
+	<body>
+		<script type="module" src="/main.js"></script>
+		
+	</body>
+</html>

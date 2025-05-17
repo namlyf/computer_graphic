@@ -36,23 +36,22 @@ const vehicleColors = [
 const lawnGreen = "#67C240";
 const trackColor = "#546E90";
 const edgeColor = "#725F48";
-const treeCrownColor = [0x498c2c];
+const treeCrownColor = 0x498c2c;
 const treeTrunkColor = 0x4b3f2f;
 const wheelGeometry = new THREE.CylinderGeometry(7.5, 7.5, 35, 32);
 const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
-const treeTrunkGeometry = new THREE.BoxGeometry(20,20, 50);
+const treeTrunkGeometry = new THREE.BoxGeometry(15,15, 50);
 const treeTrunkMaterial = new THREE.MeshLambertMaterial({
   color: treeTrunkColor
 });
 const treeCrownMaterial = new THREE.MeshLambertMaterial({
-  color: pickRandom(treeCrownColor)
+  color: treeCrownColor
 });
 
 const config = {
   shadows: true, // Use shadow
   trees: true, // Add trees to the map
   curbs: true, // Show texture on the extruded geometry
-
 };
 
 const wheelGeometry1 = new THREE.CylinderGeometry(7.5, 7.5, 37, 32);
@@ -61,11 +60,12 @@ const speed = 0.0007;
 const playerAngleInitial = Math.PI;
 let playerAngleMoved;
 let playerAngleMoved1;
+let lastTimestamp=null;
 let isPaused = false;
-let ready;
-let lastTimestamp;
+
 //-------------------------------camere, light, scene,render-------------------
 const scene = new THREE.Scene();
+
 
 const renderer = new THREE.WebGLRenderer({ antialias: true,
     powerPreference: "high-performance"
@@ -79,46 +79,34 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
 scene.add(ambientLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.9);
-dirLight.position.set(100, -300, 300);
-scene.add(dirLight);
-
-dirLight.castShadow = true;
-dirLight.shadow.mapSize.width = 2048;
-dirLight.shadow.mapSize.height = 2048;
-dirLight.shadow.camera.near = 100;
-dirLight.shadow.camera.far = 1000;
-dirLight.shadow.camera.left = -500;
-dirLight.shadow.camera.right = 500;
-dirLight.shadow.camera.top = 500;
-dirLight.shadow.camera.bottom = -500;
 
 // Camera
 const aspectRatio = window.innerWidth / window.innerHeight;
 const cameraWidth = 1450;
 const cameraHeight = cameraWidth / aspectRatio;
 
-// const camera = new THREE.PerspectiveCamera(
-//   60,                // FOV - góc nhìn dọc (degrees)
-//   aspectRatio,       // tỉ lệ khung hình
-//   0.1,               // near clipping plane
-//   2000               // far clipping plane
-// );
-
-// camera.position.set(0, -650,50);
-// camera.lookAt(0, 0, 0);
-const camera = new THREE.OrthographicCamera(
-  cameraWidth / -2,
-  cameraWidth / 2,
-  cameraHeight / 2,
-  cameraHeight / -2,
-  50,
-  700
+const camera = new THREE.PerspectiveCamera(
+  60,                // FOV - góc nhìn dọc (degrees)
+  aspectRatio,       // tỉ lệ khung hình
+  0.1,               // near clipping plane
+  2000               // far clipping plane
 );
-camera.position.set(0, -210, 400);
-camera.lookAt(0, 0, 0);
 
-renderMap(cameraWidth, cameraHeight *2);
+camera.position.set(0, -650,230);
+camera.lookAt(0, 0, 0);
+// const camera = new THREE.OrthographicCamera(
+//   cameraWidth / -2,
+//   cameraWidth / 2,
+//   cameraHeight / 2,
+//   cameraHeight / -2,
+//   50,
+//   700
+// );
+// camera.position.set(0,-150, 550);
+// camera.lookAt(0, 0, 0);
+
+renderMap(cameraWidth, cameraHeight*1.5);
+
 
 
 //--------------------------Map------------------------
@@ -232,7 +220,7 @@ function getBlueCircleLayer() {
   const geometry = new THREE.ExtrudeGeometry([shape], {
     depth: 0.1,
     bevelEnabled: false,
-    curveSegments: 128,
+    curveSegments: 64,
     transparent: true,
     roughness: 0.8,           
     metalness: 0.2,
@@ -245,6 +233,10 @@ function getBlueCircleLayer() {
   mesh.position.z = 0.2; 
   return mesh;
 }
+
+
+
+
 function renderMap(mapWidth, mapHeight) {
   const lineMarkingsTexture = getLineMarkings(mapWidth, mapHeight);
 
@@ -351,7 +343,7 @@ function renderMap(mapWidth, mapHeight) {
     scene.add(tree11);
 
     const tree12 = Tree();
-    tree12.position.x = arcCenterX * 1.5;
+    tree12.position.x = arcCenterX * 1.7;
     tree12.position.y = -arcCenterX * 2.4;
     scene.add(tree12);
 
@@ -360,14 +352,42 @@ function renderMap(mapWidth, mapHeight) {
     tree13.position.y = -arcCenterX * 2.4;
     scene.add(tree13);
 
-    const tree14 = Tree();
+    const tree14 = PineTree();
     tree14.position.x = -arcCenterX * 1.5;
     tree14.position.y = -arcCenterX * 1.4;
     scene.add(tree14);
+
+    const tree15 = PineTree();
+    tree15.position.set(-30,-275,0)
+    scene.add(tree15);
+
+    const tree16 = PineTree();    
+    tree16.position.set(-150,210,0)
+    scene.add(tree16);
+
+    const tree17 = PineTree();    
+    tree17.position.set(-415,115,0)
+    scene.add(tree17);
+
+    const tree18 = PineTree();    
+    tree18.position.set(225,-135,0)
+    scene.add(tree18);
+    const tree19 = PineTree();    
+    tree19.position.set(280,-280,0)
+    scene.add(tree19);
+
+    const tree20 = PineTree();    
+    tree20.position.set(-285,-345,0)
+    scene.add(tree20);
+
+    const tree21 = PineTree();    
+    tree21.position.set(50,-405,0)
+    scene.add(tree21);
+
   }
 }
 
-  function Tree() {
+function Tree() {
     const tree = new THREE.Group();
   
     const trunk = new THREE.Mesh(treeTrunkGeometry, treeTrunkMaterial);
@@ -377,7 +397,7 @@ function renderMap(mapWidth, mapHeight) {
     trunk.matrixAutoUpdate = false;
     tree.add(trunk);
   
-    const treeHeights = 60;
+    const treeHeights = 65;
     const height = treeHeights;
   
     const crown = new THREE.Mesh(
@@ -390,7 +410,53 @@ function renderMap(mapWidth, mapHeight) {
     tree.add(crown);
   
     return tree;
-  }
+}
+function PineTree() {
+  const tree = new THREE.Group();
+  
+    // Thân cây
+    const trunk = new THREE.Mesh(
+      new THREE.CylinderGeometry(2, 2, 10, 8),
+      new THREE.MeshLambertMaterial({ color: 0x8B4513 }) // màu nâu
+    );
+    trunk.position.y = 5;
+    tree.add(trunk);
+  
+    // Tầng lá thứ 1 (dưới cùng)
+    const leaf1 = new THREE.Mesh(
+      new THREE.ConeGeometry(8, 12, 16),
+      new THREE.MeshLambertMaterial({ color: 0x0b6623 }) // xanh lá
+    );
+    leaf1.position.y = 14;
+    tree.add(leaf1);
+  
+    // Tầng lá thứ 2
+    const leaf2 = new THREE.Mesh(
+      new THREE.ConeGeometry(6, 10, 16),
+      new THREE.MeshLambertMaterial({ color: 0x0b6623 })
+    );
+    leaf2.position.y = 20;
+    tree.add(leaf2);
+  
+    // Tầng lá thứ 3 (trên cùng)
+    const leaf3 = new THREE.Mesh(
+      new THREE.ConeGeometry(4, 8, 16),
+      new THREE.MeshLambertMaterial({ color: 0x0b6623 })
+    );
+    leaf3.position.y = 25;
+    tree.add(leaf3);
+  
+    // Bật bóng đổ
+    tree.traverse(obj => {
+      if (obj.isMesh) {
+        obj.castShadow = true;
+        obj.receiveShadow = true;
+      }
+    });
+    tree.rotation.x = Math.PI / 2;
+    tree.scale.set(4, 4, 4);
+    return tree;
+}
 
 
 
@@ -433,7 +499,7 @@ function Car() {
 
   const main = new THREE.Mesh(
     new THREE.BoxGeometry(60, 30, 15),
-    new THREE.MeshLambertMaterial({ color:0xFFFF00 })
+    new THREE.MeshLambertMaterial({ color: color })
   );
   main.position.z = 12;
   main.castShadow = true;
@@ -648,6 +714,79 @@ function getTruckSideTexture() {
 
 
 // -----------------------------------------Ship------------------------------
+function Duck() {
+  const duck = new THREE.Group(); // Nhóm tất cả phần lại với nhau
+
+  // Thân giữa
+  const thangiua = new THREE.Mesh(
+    new THREE.CylinderGeometry(20, 20, 50, 28),
+    new THREE.MeshLambertMaterial({ color: 0xffffff })
+  );
+  thangiua.position.set(0, 0, 0);
+  duck.add(thangiua);
+
+  // Thân trước
+  const thantruoc = new THREE.Mesh(
+    new THREE.SphereGeometry(20, 28, 28),
+    new THREE.MeshLambertMaterial({ color: 0xffffff })
+  );
+  thantruoc.position.set(0, 30, 0);
+  duck.add(thantruoc);
+
+  // Thân sau
+  const thansau = new THREE.Mesh(
+    new THREE.SphereGeometry(20, 28, 28),
+    new THREE.MeshLambertMaterial({ color: 0xffffff })
+  );
+  thansau.position.set(0, -30, 0);
+  duck.add(thansau);
+
+  // Cổ
+  const co = new THREE.Mesh(
+    new THREE.CylinderGeometry(15, 15, 40, 32),
+    new THREE.MeshLambertMaterial({ color: 0xffffff })
+  );
+  co.position.set(0, 30, 20);
+  co.rotation.x = Math.PI / 2;
+  duck.add(co);
+
+  // Đầu
+  const dau = new THREE.Mesh(
+    new THREE.SphereGeometry(15, 32, 32),
+    new THREE.MeshLambertMaterial({ color: 0xffffff })
+  );
+  dau.position.set(0, 35, 40);
+  dau.scale.set(1.1, 1.5, 1);
+  dau.rotation.x = -Math.PI / 12;
+  duck.add(dau);
+
+  // Mắt phải
+  const mat1 = new THREE.Mesh(
+    new THREE.SphereGeometry(4, 32, 32),
+    new THREE.MeshLambertMaterial({ color: 0x000000 })
+  );
+  mat1.position.set(7, 38, 52);
+  duck.add(mat1);
+
+  // Mắt trái
+  const mat2 = new THREE.Mesh(
+    new THREE.SphereGeometry(4, 32, 32),
+    new THREE.MeshLambertMaterial({ color: 0x000000 })
+  );
+  mat2.position.set(-7, 38, 52);
+  duck.add(mat2);
+
+  // Mỏ
+  const mo = new THREE.Mesh(
+    new THREE.ConeGeometry(9, 15, 32),
+    new THREE.MeshLambertMaterial({ color: 0xffa500 })
+  );
+  mo.position.set(0, 58, 43);
+  mo.rotation.x = Math.PI / 8;
+  duck.add(mo);
+
+  return duck;
+}
 
 function createFlagTexture() {
       const canvas = document.createElement('canvas');
@@ -829,15 +968,17 @@ function createFlagTexture() {
     
   // }
 //----------------------------Model------------------------------
-let model1, model2,model3,model4;
+let model1, model2,model3,model4,model5,model6,model7,model8,model9 ;
 const loader = new GLTFLoader();
 
+
 // Load model 1
-loader.load('models/MountainLarge_Single.gltf', function(gltf) {
+
+loader.load('model/Crane.glb', function(gltf) {
   model1 = gltf.scene;
-  model1.scale.set(100, 100, 100);
-  model1.rotation.set(Math.PI / 2, 0, 0);
-  model1.position.set(-220, 420, 0);
+  model1.scale.set(17, 17, 17);
+  model1.rotation.set(Math.PI / 2, Math.PI / 4, 0);
+  model1.position.set(-235, 120, 0);
   model1.traverse(function(node) {
     if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
@@ -846,12 +987,24 @@ loader.load('models/MountainLarge_Single.gltf', function(gltf) {
   });
   scene.add(model1);
 });
-// Load model 1
-loader.load('models/MountainLarge_Single.gltf', function(gltf) {
+loader.load('model/Crane.glb', function(gltf) {
+  model1 = gltf.scene;
+  model1.scale.set(17, 17, 17);
+  model1.rotation.set(Math.PI / 2, 0, 0);
+  model1.position.set(-420, 70, 0);
+  model1.traverse(function(node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model1);
+});
+loader.load('model/Building_1.glb', function(gltf) {
   model4 = gltf.scene;
   model4.scale.set(100, 100, 100);
-  model4.rotation.set(Math.PI / 2, 0, 0);
-  model4.position.set(-450, -100, 0);
+  model4.rotation.set(Math.PI / 2, -Math.PI / 2, 0);
+  model4.position.set(-450, -150, 0);
   model4.traverse(function(node) {
     if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
@@ -861,14 +1014,27 @@ loader.load('models/MountainLarge_Single.gltf', function(gltf) {
   scene.add(model4);
 });
 
+loader.load('model/Building_2.glb', function(gltf) {
+  model5 = gltf.scene;
+  model5.scale.set(100, 100, 100);
+  model5.rotation.set(Math.PI / 2, -Math.PI / 2, 0);
+  model5.position.set(-450, -40, 0);
+  model5.traverse(function(node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model5);
+});
 
 
 // Load model 2
-loader.load('models/Mountain Group.glb', function(gltf) {
+loader.load('model/Building_3.glb', function(gltf) {
   model2 = gltf.scene;
-  model2.scale.set(100, 100, 100); // có thể điều chỉnh khác với model1
-  model2.rotation.set(Math.PI / 2, Math.PI /3, 0);
-  model2.position.set(-550, 0, 0); // đặt xa hơn để không bị chồng lên nhau
+  model2.scale.set(80, 80, 80); // có thể điều chỉnh khác với model1
+  model2.rotation.set(Math.PI / 2, -Math.PI / 1.5, 0);
+  model2.position.set(-380, 200, 0); // đặt xa hơn để không bị chồng lên nhau
   model2.traverse(function(node) {
   if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
@@ -879,11 +1045,11 @@ loader.load('models/Mountain Group.glb', function(gltf) {
   scene.add(model2);
 });
 
-loader.load('models/Mountains.glb', function(gltf) {
+loader.load('model/Small_Building.glb', function(gltf) {
   model3 = gltf.scene;
   model3.scale.set(100, 100, 100);
-  model3.rotation.set(Math.PI / 2,0, 0);
-  model3.position.set(-500,250, 0);
+  model3.rotation.set(Math.PI / 2, -Math.PI / 1.5, 0);
+  model3.position.set(-350,300, 0);
   model3.traverse(function(node) {
     if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
@@ -892,29 +1058,340 @@ loader.load('models/Mountains.glb', function(gltf) {
   });
   scene.add(model3);
 });
+loader.load('model/Large_Building.glb', function(gltf) {
+  model6 = gltf.scene;
+  model6.scale.set(100, 100, 100);
+  model6.rotation.set(Math.PI / 2,0, 0);
+  model6.position.set(0,440, 0);
+  model6.traverse(function(node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model6);
+});
+loader.load('model/Large_Building.glb', function(gltf) {
+  model6 = gltf.scene;
+  model6.scale.set(100, 100, 100);
+  model6.rotation.set(Math.PI / 2,-Math.PI/2, 0);
+  model6.position.set(450,0, 0);
+  model6.traverse(function(node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model6);
+});
+
+
+loader.load('model/SmallBuilding_1.glb', function(gltf) {
+  model6 = gltf.scene;
+  model6.scale.set(100, 100, 100);
+  model6.rotation.set(Math.PI / 2,-Math.PI/1.2, 0);
+  model6.position.set(-165,400, 0);
+  model6.traverse(function(node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model6);
+});
+
+loader.load('model/SmallBuilding_2.glb', function(gltf) {
+  model7 = gltf.scene;
+  model7.scale.set(100, 100, 100);
+  model7.rotation.set(Math.PI / 2,Math.PI/1.2, 0);
+  model7.position.set(170,400, 0);
+  model7.traverse(function(node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model7);
+});
+loader.load('model/Small_Building.glb', function(gltf) {
+  model8 = gltf.scene;
+  model8.scale.set(100, 100, 100);
+  model8.rotation.set(Math.PI / 2,-Math.PI/1.2, 0);
+  model8.position.set(-250,370, 0);
+  model8.traverse(function(node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model8);
+});
+loader.load('model/Skyscraper.glb', function(gltf) {
+  model8 = gltf.scene;
+  model8.scale.set(80, 80, 80);
+  model8.rotation.set(Math.PI / 2,Math.PI/1.7, 0);
+  model8.position.set(400,200, 0);
+  model8.traverse(function(node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model8);
+});
+loader.load('model/Skyscraper.glb', function(gltf) {
+  model8 = gltf.scene;
+  model8.scale.set(85, 85, 85);
+  model8.rotation.set(Math.PI / 2,Math.PI/2, 0);
+  model8.position.set(420,-180, 0);
+  model8.traverse(function(node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model8);
+});
+loader.load('model/Computer Large.glb', function(gltf) {
+  model8 = gltf.scene;
+  model8.scale.set(80, 80, 80);
+  model8.rotation.set(Math.PI / 2,-Math.PI/3, 0);
+  model8.position.set(300,300, 0);
+  model8.traverse(function(node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model8);
+});
+
+let grassPatchOriginal;
+
+loader.load('model/Grass Patch.glb', function (gltf) {
+  grassPatchOriginal = gltf.scene;
+  grassPatchOriginal.scale.set(50, 50, 50);
+  grassPatchOriginal.rotation.set(Math.PI / 2, 0, 0);
+  grassPatchOriginal.position.set(0, -480, 10);
+
+  grassPatchOriginal.traverse(function (node) {
+    if (node.isMesh) {
+      node.castShadow = true;
+      node.receiveShadow = true;
+    }
+  });
+
+  scene.add(grassPatchOriginal);
+
+  const grass1 = grassPatchOriginal.clone(true);
+  grass1.position.set(100, -480, 10);
+  scene.add(grass1);
+
+  const grass2 = grassPatchOriginal.clone(true);
+  grass2.position.set(-100, -480, 10);
+  scene.add(grass2);
+ 
+  const grass3 = grassPatchOriginal.clone(true);
+  grass3.position.set(-180, -420, 10);
+  scene.add(grass3);
+  const grass4 = grassPatchOriginal.clone(true);
+  grass4.position.set(-270, -450, 10);
+  scene.add(grass4);
+  const grass5 = grassPatchOriginal.clone(true);
+  grass5.position.set(270, -450, 10);
+  scene.add(grass5);
+  const grass6 = grassPatchOriginal.clone(true);
+  grass6.position.set(220, -420, 10);
+  scene.add(grass6);
+  const grass7 = grassPatchOriginal.clone(true);
+  grass7.position.set(-320, -350, 10);
+  scene.add(grass7);
+  const grass8 = grassPatchOriginal.clone(true);
+  grass8.position.set(320, -350, 10);
+  scene.add(grass8);
+  const grass9 = grassPatchOriginal.clone(true);
+  grass9.position.set(-390, -290, 10);
+  scene.add(grass9);
+  const grass10 = grassPatchOriginal.clone(true);
+  grass10.position.set(390, -285, 10);
+  scene.add(grass10);
+
+  // Tính toán phạm vi trải cỏ
+//   const minY = -1000;
+// const maxY = -440;
+// const spacingY = 100;
+
+// const minX = -600;
+// const maxX = 600;
+// const spacingX = 50;
+//  for (let x = minX; x <= maxX; x += spacingX) {
+//     for (let y = maxY; y >= minY; y -= spacingY) {
+//       const grass = grassPatchOriginal.clone(true);
+//       grass.position.set(x, y, 10);
+//       scene.add(grass);
+//     }
+//   }
+});
+//----------------------------------Cloud----------------------------------------
+function createCloud() {
+  const cloud = new THREE.Group();
+
+  const geometry = new THREE.SphereGeometry(7, 16, 32);
+  const material = new THREE.MeshLambertMaterial({ color: 0xffffff,
+    transparent: true
+  }); 
+
+  const part1 = new THREE.Mesh(geometry, material);
+  const part2 = new THREE.Mesh(geometry, material);
+  const part3 = new THREE.Mesh(geometry, material);
+  const part4 = new THREE.Mesh(geometry, material);
+  part1.position.set(0, 0, 0);
+  part2.position.set(5, 0, 0);
+  part3.position.set(-5, 0, 0);
+  part4.position.set(0, 0,5);
+  cloud.add(part1);
+  cloud.add(part2);
+  cloud.add(part3);
+  cloud.add(part4);
+
+  // Bật shadow (nếu muốn bóng mờ nhẹ)
+  cloud.traverse(obj => {
+    if (obj.isMesh) {
+      obj.castShadow = true;
+    }
+  });
+  cloud.scale.set(2.5, 2.5, 3);
+  return cloud;
+}
+
+const clouds = [];
+
+function spawnClouds() {
+  for (let i = 0; i < 8; i++) {
+    const cloud = createCloud(); // mỗi lần tạo một đám mây mới
+
+    cloud.position.set(
+      i * 100 - 320,                // mỗi đám mây cách nhau 100 đơn vị
+      Math.random() * 150 + 100,   // cao hơn mặt đất
+      320 + Math.random() * 100    // random theo trục Z để có chiều sâu
+    );
+
+    cloud.speed = 0.2 + Math.random() * 0.2; // tốc độ bay
+    scene.add(cloud);
+    clouds.push(cloud);
+  }
+}
+spawnClouds();
+
 
 //--------------------------------Functions--------------------------------
+const sunLight = new THREE.DirectionalLight(0xffffff, 2.0);
+sunLight.position.set(100, -300, 400);
+scene.add(sunLight);
 
+sunLight.castShadow = true;
+sunLight.shadow.mapSize.width = 2048;
+sunLight.shadow.mapSize.height = 2048;
+sunLight.shadow.camera.near = 100;
+sunLight.shadow.camera.far = 2000;
+sunLight.shadow.camera.left = -500;
+sunLight.shadow.camera.right = 500;
+sunLight.shadow.camera.top = 500;
+sunLight.shadow.camera.bottom = -500;
 
+// Tạo mặt trời hình cầu để nhìn thấy trên trời
+const sunSphere = new THREE.Mesh(
+  new THREE.SphereGeometry(10, 32, 32),
+  new THREE.MeshBasicMaterial({ color: 0xffff00 }) // màu vàng
+);
+scene.add(sunSphere);
+
+// Thông số quay
+let sunAngle = 0;
+const sunRadius = 700; // bán kính quay quanh tâm
+const dayNightSpeed = 0.001;
+scene.background = new THREE.Color(0x87ceeb);
 let waveClock = new THREE.Clock();
 function animation(timestamp) {
+  
+  if (isPaused) return; 
+
   if (!lastTimestamp) {
     lastTimestamp = timestamp;
+    requestAnimationFrame(animation);
     return;
   }
   const elapsed = waveClock.getElapsedTime();
+  if (sunSphere)  {
+     sunAngle += dayNightSpeed;
 
+  const sunX = 0;
+  const sunY = Math.cos(sunAngle) * sunRadius;
+  const sunZ = Math.sin(sunAngle) * sunRadius;
+
+  sunLight.position.set(sunX, sunY, sunZ);
+  sunLight.target.position.set(0, 0, 0);
+  sunLight.target.updateMatrixWorld();
+
+  sunSphere.position.set(sunX, sunY, sunZ);
+
+  // === ĐIỀU CHỈNH ĐỘ SÁNG NGÀY – ĐÊM ===
+  const brightness = Math.max(0, Math.sin(sunAngle));
+  sunLight.intensity = brightness * 2;
+  ambientLight.intensity = 1.0 + 0.3 * brightness;
+
+  // === CHUYỂN ĐỔI MÀU TRỜI (sáng → tối) ===
+  const skyColor = new THREE.Color().lerpColors(
+    new THREE.Color(0x0d1b2a), // màu đêm
+    new THREE.Color(0x87ceeb), // màu sáng
+    brightness
+  );
+  scene.background = skyColor;
+  }
+  if (clouds) {
+  clouds.forEach((cloud) => {
+  cloud.position.x += cloud.speed;
+
+  if (cloud.position.x > 450) {
+    cloud.position.x = -500;
+    cloud.position.y = Math.random() * 150 + 100;
+    cloud.position.z = 320 + Math.random() * 100;
+  }
+});
+  }
   if (player2) {
     player2.position.z = Math.sin(elapsed * 1.5) * 0.5;
-    player2.rotation.x = Math.sin(elapsed * 1.2) * 0.15;
-    player2.rotation.y = Math.cos(elapsed * 0.8) * 0.03;
+    player2.rotation.y = Math.sin(elapsed * 1.2) * 0.15;
+    player2.rotation.x = Math.cos(elapsed * 0.8) * 0.03;
   }
-  renderer.render(scene, camera);
+  if (duck){
+    duck.position.add(snowmanVelocity);
 
+  // Kiểm tra va chạm biên rào ảo (ví dụ vùng hình vuông)
+  const boundary = innerTrackRadius-60; // bán kính vùng chuyển động
+
+  if (duck.position.x > boundary || duck.position.x < -boundary) {
+    snowmanVelocity.x *= -1; // Đổi hướng trục x
+    duck.position.x = THREE.MathUtils.clamp(duck.position.x, -boundary, boundary);
+  }
+
+  if (duck.position.y > boundary || duck.position.y < -boundary) {
+    snowmanVelocity.y *= -1; // Đổi hướng trục y
+    duck.position.y = THREE.MathUtils.clamp(duck.position.y, -boundary, boundary);
+  }
+
+  // Hướng quay theo vận tốc
+  duck.rotation.z = Math.atan2(snowmanVelocity.y, snowmanVelocity.x);
+   const distance = duck.position.distanceTo(player2.position);
+  if (distance < (duckRadius + shipRadius)) {
+    snowmanVelocity.multiplyScalar(-1); // phản lại
+  }
+  }
   const timeDelta = timestamp - lastTimestamp;
-  movePlayerCar(timeDelta); 
+  movePlayerCar(timeDelta);
   renderer.render(scene, camera);
   lastTimestamp = timestamp;
+  requestAnimationFrame(animation);
 }
 
 function movePlayerCar(timeDelta) {
@@ -942,6 +1419,20 @@ function movePlayerCar(timeDelta) {
 
 
 }
+const duck = Duck();
+duck.position.set(0, 100, 0);
+duck.scale.set(0.3, 0.3, 0.3);
+scene.add(duck);
+
+const snowmanVelocity = new THREE.Vector3(
+  (Math.random() - 0.5) * 2,  
+  (Math.random() - 0.5) * 2,  
+  0                           
+);
+const duckRadius = 20; 
+const shipRadius = 50;
+
+enableShadowForObject(duck);
 
 const player1 = Truck();
 scene.add(player1);
@@ -955,42 +1446,45 @@ const playerCar = Car();
 scene.add(playerCar);
 
 renderer.render(scene, camera);
-reset();
+
+
+function enableShadowForObject(object) {
+  object.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+}
+
 function reset() {
   playerAngleMoved = 0;
   playerAngleMoved1 = 0;
   lastTimestamp = undefined;
   movePlayerCar(0);
   renderer.render(scene, camera);
-  ready = true;
 }
+reset();
 
-function startGame() {
-  if (ready) {
-    ready = false;
-    renderer.setAnimationLoop(animation);
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'p' || event.key === 'P') {
+    isPaused = true;
+    waveClock.stop(); // Dừng thời gian
   }
-}
-
-window.addEventListener("keydown", function (event) {
-
-  if (event.key == "R" || event.key == "r") {
-    if (isPaused == false){
-    startGame();
-    return;
-    }
-    else {
-        renderer.setAnimationLoop(animation);
-        isPaused = false;
-        return;
-    }
+  if (event.key === 'r' || event.key === 'R') {
+    isPaused = false;
+    waveClock.start(); // Tiếp tục thời gian
+    lastTimestamp = null; // Reset timestamp để tránh bước nhảy
+    requestAnimationFrame(animation); // Gọi lại animation
   }
-  if (event.key == "P" || event.key == "p") {
-        renderer.setAnimationLoop(null);
-        isPaused = true;
-        return;
-      }
-  
+});
+window.addEventListener('resize', () => {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  renderer.setSize(width, height);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
 });
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -998,8 +1492,9 @@ controls.enableDamping = true;
 
 function animate() {
     requestAnimationFrame(animate);
-   controls.update();
+    controls.update();
+    
     renderer.render(scene, camera);
 }
-
 animate();
+

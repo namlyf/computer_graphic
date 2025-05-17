@@ -23,7 +23,7 @@ const arcAngle2 = Math.asin(deltaY / outerTrackRadius);
 
 const arcCenterX =
   (Math.cos(arcAngle1) * innerTrackRadius +
-    Math.cos(arcAngle2) * outerTrackRadius) /2;
+    Math.cos(arcAngle2) * outerTrackRadius) / 2;
 
 
 const vehicleColors = [
@@ -40,7 +40,7 @@ const treeCrownColor = 0x498c2c;
 const treeTrunkColor = 0x4b3f2f;
 const wheelGeometry = new THREE.CylinderGeometry(7.5, 7.5, 35, 32);
 const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
-const treeTrunkGeometry = new THREE.BoxGeometry(15,15, 50);
+const treeTrunkGeometry = new THREE.BoxGeometry(15, 15, 50);
 const treeTrunkMaterial = new THREE.MeshLambertMaterial({
   color: treeTrunkColor
 });
@@ -60,16 +60,17 @@ const speed = 0.0007;
 const playerAngleInitial = Math.PI;
 let playerAngleMoved;
 let playerAngleMoved1;
-let lastTimestamp=null;
+let lastTimestamp = null;
 let isPaused = false;
 
 //-------------------------------camere, light, scene,render-------------------
 const scene = new THREE.Scene();
 
 
-const renderer = new THREE.WebGLRenderer({ antialias: true,
-    powerPreference: "high-performance"
- });
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  powerPreference: "high-performance"
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
 if (config.shadows) renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
@@ -92,7 +93,7 @@ const camera = new THREE.PerspectiveCamera(
   2000               // far clipping plane
 );
 
-camera.position.set(0, -650,230);
+camera.position.set(0, -650, 230);
 camera.lookAt(0, 0, 0);
 // const camera = new THREE.OrthographicCamera(
 //   cameraWidth / -2,
@@ -104,125 +105,150 @@ camera.lookAt(0, 0, 0);
 // );
 // camera.position.set(0,-150, 550);
 // camera.lookAt(0, 0, 0);
-
-renderMap(cameraWidth, cameraHeight*1.5);
+const mapWidth = 1100;
+const mapHeight = 1100;
+renderMap(mapWidth, mapHeight);
 
 
 
 //--------------------------Map------------------------
 function getLineMarkings(mapWidth, mapHeight) {
-    const scale = 2; // Tăng độ phân giải gấp 2 lần
-    const canvas = document.createElement('canvas');
-    canvas.width = mapWidth * scale;
-    canvas.height = mapHeight * scale;
-    const context = canvas.getContext('2d');
-  
-    // Scale lại để giữ tỷ lệ hình ảnh
-    context.scale(scale, scale);
-  
-    // Fill nền
-    context.fillStyle = '#546E90';
-    context.fillRect(0, 0, mapWidth, mapHeight);
-  
-    // Đặt thuộc tính vẽ line
-    context.lineWidth = 2;
-    context.setLineDash([10, 14]);
-  
-    // Arc đầu tiên
-    context.strokeStyle = '#E0FFFF';
-    context.beginPath();
-    context.arc(mapWidth / 2, mapHeight / 2, trackRadius, 0, Math.PI * 2);
-    context.stroke();
-  
-    // Arc thứ hai
-    context.strokeStyle = '#E0FFFF';
-    context.beginPath();
-    context.arc(mapWidth / 2, mapHeight / 2, trackRadius2, 0, Math.PI * 2);
-    context.stroke();
-  
-    // Arc ranh giới
-    context.setLineDash([]);
+  const scale = 2; // Tăng độ phân giải gấp 2 lần
+  const canvas = document.createElement('canvas');
+  canvas.width = mapWidth * scale;
+  canvas.height = mapHeight * scale;
+  const context = canvas.getContext('2d');
+
+  // Scale lại để giữ tỷ lệ hình ảnh
+  context.scale(scale, scale);
+
+  // Fill nền
+  context.fillStyle = '#546E90';
+  context.fillRect(0, 0, mapWidth, mapHeight);
+
+  // Đặt thuộc tính vẽ line
+  context.lineWidth = 2;
+  context.setLineDash([10, 14]);
+
+  // Arc đầu tiên
+  context.strokeStyle = '#E0FFFF';
+  context.beginPath();
+  context.arc(mapWidth / 2, mapHeight / 2, trackRadius, 0, Math.PI * 2);
+  context.stroke();
+
+  // Arc thứ hai
+  context.strokeStyle = '#E0FFFF';
+  context.beginPath();
+  context.arc(mapWidth / 2, mapHeight / 2, trackRadius2, 0, Math.PI * 2);
+  context.stroke();
+
+  // Arc ranh giới
+  context.setLineDash([]);
   context.strokeStyle = '#E0FFFF';
   context.beginPath();
   context.arc(mapWidth / 2, mapHeight / 2, innerTrackRadius2, 0, Math.PI * 2);
   context.stroke();
-  
+
   // Arc ranh giới ngoài
   context.beginPath();
   context.arc(mapWidth / 2, mapHeight / 2, outerTrackRadius2, 0, Math.PI * 2);
   context.stroke();
-  
-    return new THREE.CanvasTexture(canvas);
-  }
+
+  context.lineWidth = 3;
+  context.strokeStyle = '#E0FFFF';
+  context.beginPath();
+  context.arc(
+    mapWidth / 2,
+    mapHeight / 2,
+    outerTrackRadius,
+    0,
+    Math.PI * 2
+  );
+  context.stroke();
+
+  context.beginPath();
+  context.arc(
+    mapWidth / 2,
+    mapHeight / 2,
+    innerTrackRadius,
+    0,
+    Math.PI * 2
+  );
+  context.stroke();
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+
 function getLeftIsland() {
-    const islandLeft = new THREE.Shape();
-      
-      islandLeft.absarc(
-        0,
-        0,
-        innerTrackRadius,
-        0,
-        2*Math.PI,
-      );
-    
-    
-      islandLeft.absarc(
-        0,
-        0,
-        innerTrackRadius2, // Bán kính ngoài lớn hơn
-        0,
-        Math.PI * 2,
-        false
-      );
-    
-      // Vẽ đường tròn trong theo chiều ngược lại để tạo vành khăn
-      const hole = new THREE.Path();
-      hole.absarc(
-        0,
-        0,
-        outerTrackRadius, // Bán kính trong
-        0,
-        Math.PI * 2,
-        true // Chiều ngược lại
-      );
-      islandLeft.holes.push(hole);
-      return islandLeft;
-  }
+  const islandLeft = new THREE.Shape();
+
+  islandLeft.absarc(
+    0,
+    0,
+    innerTrackRadius,
+    0,
+    2 * Math.PI,
+  );
+
+
+  islandLeft.absarc(
+    0,
+    0,
+    innerTrackRadius2, // Bán kính ngoài lớn hơn
+    0,
+    Math.PI * 2,
+    false
+  );
+
+  // Vẽ đường tròn trong theo chiều ngược lại để tạo vành khăn
+  const hole = new THREE.Path();
+  hole.absarc(
+    0,
+    0,
+    outerTrackRadius, // Bán kính trong
+    0,
+    Math.PI * 2,
+    true // Chiều ngược lại
+  );
+  islandLeft.holes.push(hole);
+  return islandLeft;
+}
 function getOuterField(mapWidth, mapHeight) {
-    const field = new THREE.Shape();
-  
-    // Tạo hình chữ nhật bao phủ toàn bộ map
-    field.moveTo(-mapWidth / 2, -mapHeight / 2);
-    field.lineTo(mapWidth / 2, -mapHeight / 2);
-    field.lineTo(mapWidth / 2, mapHeight / 2);
-    field.lineTo(-mapWidth / 2, mapHeight / 2);
-    field.lineTo(-mapWidth / 2, -mapHeight / 2);
-  
-    // Đục lỗ vòng tròn lớn ngoài cùng
-    const hole = new THREE.Path();
-    hole.absarc(
-      0,
-      0,
-      outerTrackRadius2,
-      0,
-      Math.PI * 2,
-      true
-    );
-    field.holes.push(hole);
-  
-    return field;
-  }
+  const field = new THREE.Shape();
+
+  // Tạo hình chữ nhật bao phủ toàn bộ map
+  field.moveTo(-mapWidth / 2, -mapHeight / 2);
+  field.lineTo(mapWidth / 2, -mapHeight / 2);
+  field.lineTo(mapWidth / 2, mapHeight / 2);
+  field.lineTo(-mapWidth / 2, mapHeight / 2);
+  field.lineTo(-mapWidth / 2, -mapHeight / 2);
+
+  // Đục lỗ vòng tròn lớn ngoài cùng
+  const hole = new THREE.Path();
+  hole.absarc(
+    0,
+    0,
+    outerTrackRadius2,
+    0,
+    Math.PI * 2,
+    true
+  );
+  field.holes.push(hole);
+
+  return field;
+}
 function getBlueCircleLayer() {
   const shape = new THREE.Shape();
 
-  shape.absarc(0, 0, innerTrackRadius-10, 0, Math.PI * 2);
+  shape.absarc(0, 0, innerTrackRadius - 10, 0, Math.PI * 2);
 
   const geometry = new THREE.ExtrudeGeometry([shape], {
     depth: 0.1,
     bevelEnabled: false,
-    curveSegments: 64,
+    curveSegments: 128,
     transparent: true,
-    roughness: 0.8,           
+    roughness: 0.8,
     metalness: 0.2,
     shadow: true
 
@@ -230,7 +256,7 @@ function getBlueCircleLayer() {
 
   const material = new THREE.MeshLambertMaterial({ color: 0x00C0FF }); // xanh biển
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.z = 0.2; 
+  mesh.position.z = 0.2;
   return mesh;
 }
 
@@ -249,38 +275,37 @@ function renderMap(mapWidth, mapHeight) {
 
   // === VÙNG TRÒN BÊN TRONG - islandLeft ===
   const islandLeftShape = getLeftIsland();
-      const islandLeftGeometry = new THREE.ExtrudeGeometry([islandLeftShape], {
-        depth: 0.1,
-        bevelEnabled: false,
-        curveSegments: 128
-      });
-      const islandLeftMesh = new THREE.Mesh(
-        islandLeftGeometry,
-        new THREE.MeshLambertMaterial({ color: 0x67c240 })
-      );
-      islandLeftMesh.receiveShadow = true; // nhận bóng
-      //islandLeftMesh.castShadow = true; // tạo bóng
-      scene.add(islandLeftMesh);
-    
-      // === VÙNG NGOÀI - outerField ===
-      const outerFieldShape = getOuterField(mapWidth, mapHeight);
-      const outerFieldGeometry = new THREE.ExtrudeGeometry([outerFieldShape], {
-        depth: 0.1,
-        bevelEnabled: false,
-        curveSegments: 128
-      });
-      const outerFieldMesh = new THREE.Mesh(  
-        outerFieldGeometry,
-        new THREE.MeshLambertMaterial({ color: 0x67c240 })
-      );
-      outerFieldMesh.receiveShadow = true; // nhận bóng
-      //outerFieldMesh.castShadow = true; // tạo bóng
-      scene.add(outerFieldMesh);
-    
-      // Lớp xanh biển
-      const blueLayer = getBlueCircleLayer();
-      blueLayer.receiveShadow = true; // nếu muốn tạo bóng cho layer này
-      scene.add(blueLayer);
+  const islandLeftGeometry = new THREE.ExtrudeGeometry([islandLeftShape], {
+    depth: 0.1,
+    bevelEnabled: false,
+    curveSegments: 128
+  });
+  const islandLeftMesh = new THREE.Mesh(
+    islandLeftGeometry,
+    new THREE.MeshLambertMaterial({ color: 0x67c240 })
+  );
+  islandLeftMesh.receiveShadow = true; // nhận bóng
+
+  scene.add(islandLeftMesh);
+
+  // === VÙNG NGOÀI - outerField ===
+  const outerFieldShape = getOuterField(mapWidth, mapHeight);
+  const outerFieldGeometry = new THREE.ExtrudeGeometry([outerFieldShape], {
+    depth: 0.1,
+    bevelEnabled: false,
+    curveSegments: 128
+  });
+  const outerFieldMesh = new THREE.Mesh(
+    outerFieldGeometry,
+    new THREE.MeshLambertMaterial({ color: 0x67c240 })
+  );
+  outerFieldMesh.receiveShadow = true; // nhận bóng
+  scene.add(outerFieldMesh);
+
+  // Lớp xanh biển
+  const blueLayer = getBlueCircleLayer();
+  blueLayer.receiveShadow = true;
+  scene.add(blueLayer);
 
   if (config.trees) {
     const tree1 = Tree();
@@ -288,12 +313,12 @@ function renderMap(mapWidth, mapHeight) {
     scene.add(tree1);
 
     const tree0 = Tree();
-    tree0.position.x = -arcCenterX *2 ;
+    tree0.position.x = -arcCenterX * 2;
     scene.add(tree0);
-    
+
 
     const tree2 = Tree();
-    tree2.position.y = arcCenterX *1;
+    tree2.position.y = arcCenterX * 1;
     tree2.position.x = arcCenterX * 1.9;
     scene.add(tree2);
 
@@ -358,104 +383,104 @@ function renderMap(mapWidth, mapHeight) {
     scene.add(tree14);
 
     const tree15 = PineTree();
-    tree15.position.set(-30,-275,0)
+    tree15.position.set(-30, -275, 0)
     scene.add(tree15);
 
-    const tree16 = PineTree();    
-    tree16.position.set(-150,210,0)
+    const tree16 = PineTree();
+    tree16.position.set(-150, 210, 0)
     scene.add(tree16);
 
-    const tree17 = PineTree();    
-    tree17.position.set(-415,115,0)
+    const tree17 = PineTree();
+    tree17.position.set(-415, 115, 0)
     scene.add(tree17);
 
-    const tree18 = PineTree();    
-    tree18.position.set(225,-135,0)
+    const tree18 = PineTree();
+    tree18.position.set(225, -135, 0)
     scene.add(tree18);
-    const tree19 = PineTree();    
-    tree19.position.set(280,-280,0)
+    const tree19 = PineTree();
+    tree19.position.set(280, -280, 0)
     scene.add(tree19);
 
-    const tree20 = PineTree();    
-    tree20.position.set(-285,-345,0)
+    const tree20 = PineTree();
+    tree20.position.set(-285, -345, 0)
     scene.add(tree20);
 
-    const tree21 = PineTree();    
-    tree21.position.set(50,-405,0)
+    const tree21 = PineTree();
+    tree21.position.set(50, -405, 0)
     scene.add(tree21);
 
   }
 }
 
 function Tree() {
-    const tree = new THREE.Group();
-  
-    const trunk = new THREE.Mesh(treeTrunkGeometry, treeTrunkMaterial);
-    trunk.position.z = 10;
-    trunk.castShadow = true;
-    trunk.receiveShadow = true;
-    trunk.matrixAutoUpdate = false;
-    tree.add(trunk);
-  
-    const treeHeights = 65;
-    const height = treeHeights;
-  
-    const crown = new THREE.Mesh(
-      new THREE.SphereGeometry(height / 2, 30, 30),
-      treeCrownMaterial
-    );
-    crown.position.z = height / 2 + 15;
-    crown.castShadow = true;
-    crown.receiveShadow = false;
-    tree.add(crown);
-  
-    return tree;
+  const tree = new THREE.Group();
+
+  const trunk = new THREE.Mesh(treeTrunkGeometry, treeTrunkMaterial);
+  trunk.position.z = 10;
+  trunk.castShadow = true;
+  trunk.receiveShadow = true;
+  trunk.matrixAutoUpdate = false;
+  tree.add(trunk);
+
+  const treeHeights = 65;
+  const height = treeHeights;
+
+  const crown = new THREE.Mesh(
+    new THREE.SphereGeometry(height / 2, 30, 30),
+    treeCrownMaterial
+  );
+  crown.position.z = height / 2 + 15;
+  crown.castShadow = true;
+  crown.receiveShadow = false;
+  tree.add(crown);
+
+  return tree;
 }
 function PineTree() {
   const tree = new THREE.Group();
-  
-    // Thân cây
-    const trunk = new THREE.Mesh(
-      new THREE.CylinderGeometry(2, 2, 10, 8),
-      new THREE.MeshLambertMaterial({ color: 0x8B4513 }) // màu nâu
-    );
-    trunk.position.y = 5;
-    tree.add(trunk);
-  
-    // Tầng lá thứ 1 (dưới cùng)
-    const leaf1 = new THREE.Mesh(
-      new THREE.ConeGeometry(8, 12, 16),
-      new THREE.MeshLambertMaterial({ color: 0x0b6623 }) // xanh lá
-    );
-    leaf1.position.y = 14;
-    tree.add(leaf1);
-  
-    // Tầng lá thứ 2
-    const leaf2 = new THREE.Mesh(
-      new THREE.ConeGeometry(6, 10, 16),
-      new THREE.MeshLambertMaterial({ color: 0x0b6623 })
-    );
-    leaf2.position.y = 20;
-    tree.add(leaf2);
-  
-    // Tầng lá thứ 3 (trên cùng)
-    const leaf3 = new THREE.Mesh(
-      new THREE.ConeGeometry(4, 8, 16),
-      new THREE.MeshLambertMaterial({ color: 0x0b6623 })
-    );
-    leaf3.position.y = 25;
-    tree.add(leaf3);
-  
-    // Bật bóng đổ
-    tree.traverse(obj => {
-      if (obj.isMesh) {
-        obj.castShadow = true;
-        obj.receiveShadow = true;
-      }
-    });
-    tree.rotation.x = Math.PI / 2;
-    tree.scale.set(4, 4, 4);
-    return tree;
+
+  // Thân cây
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(2, 2, 10, 8),
+    new THREE.MeshLambertMaterial({ color: 0x8B4513 }) // màu nâu
+  );
+  trunk.position.y = 5;
+  tree.add(trunk);
+
+  // Tầng lá thứ 1 (dưới cùng)
+  const leaf1 = new THREE.Mesh(
+    new THREE.ConeGeometry(8, 12, 16),
+    new THREE.MeshLambertMaterial({ color: 0x0b6623 }) // xanh lá
+  );
+  leaf1.position.y = 14;
+  tree.add(leaf1);
+
+  // Tầng lá thứ 2
+  const leaf2 = new THREE.Mesh(
+    new THREE.ConeGeometry(6, 10, 16),
+    new THREE.MeshLambertMaterial({ color: 0x0b6623 })
+  );
+  leaf2.position.y = 20;
+  tree.add(leaf2);
+
+  // Tầng lá thứ 3 (trên cùng)
+  const leaf3 = new THREE.Mesh(
+    new THREE.ConeGeometry(4, 8, 16),
+    new THREE.MeshLambertMaterial({ color: 0x0b6623 })
+  );
+  leaf3.position.y = 25;
+  tree.add(leaf3);
+
+  // Bật bóng đổ
+  tree.traverse(obj => {
+    if (obj.isMesh) {
+      obj.castShadow = true;
+      obj.receiveShadow = true;
+    }
+  });
+  tree.rotation.x = Math.PI / 2;
+  tree.scale.set(4, 4, 4);
+  return tree;
 }
 
 
@@ -508,15 +533,15 @@ function Car() {
   const denL = new THREE.Mesh(
     new THREE.SphereGeometry(5, 60, 64),
     new THREE.MeshBasicMaterial({ color: 0xFFFF00 })
-);
+  );
   denL.position.set(28, -8, 10);
   car.add(denL);
 
 
-const denR = new THREE.Mesh(
-    new THREE.SphereGeometry(5, 60, 64), 
-    new THREE.MeshBasicMaterial({ color: 0xFFFF00 }) 
-);
+  const denR = new THREE.Mesh(
+    new THREE.SphereGeometry(5, 60, 64),
+    new THREE.MeshBasicMaterial({ color: 0xFFFF00 })
+  );
   denR.position.set(28, 8, 10);
   car.add(denR);
 
@@ -558,159 +583,159 @@ const denR = new THREE.Mesh(
   return car;
 }
 function Wheel() {
-      const wheel = new THREE.Mesh(wheelGeometry1, wheelMaterial);
-      wheel.position.z = 6;
-      wheel.castShadow = false;
-      wheel.receiveShadow = false;
-      return wheel;
-    }
+  const wheel = new THREE.Mesh(wheelGeometry1, wheelMaterial);
+  wheel.position.z = 6;
+  wheel.castShadow = false;
+  wheel.receiveShadow = false;
+  return wheel;
+}
 
 // ---------------------------------------------- Truck -----------------------------------
 function getCargotextrue() {
-      const canvas = document.createElement("canvas");
-      canvas.width = 64;
-      canvas.height = 32;
-      const context = canvas.getContext("2d");
-    
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, 64, 32);
-    
-      context.fillStyle = "#000000";
-      context.font = "25px Arial";
-      context.fillText("N",25,25);
-    
-      return new THREE.CanvasTexture(canvas);
-  }
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 32;
+  const context = canvas.getContext("2d");
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, 64, 32);
+
+  context.fillStyle = "#000000";
+  context.font = "25px Arial";
+  context.fillText("N", 25, 25);
+
+  return new THREE.CanvasTexture(canvas);
+}
 function getCargotextrue2() {
-    const canvas = document.createElement("canvas");
-    canvas.width = 32;
-    canvas.height = 32;
-    const context = canvas.getContext("2d");
-  
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, 64, 32);
-  
-    context.fillStyle = "#000000";
-    context.font = "20px Arial";
-    context.fillText("T",10,25);
-  
-    return new THREE.CanvasTexture(canvas);
+  const canvas = document.createElement("canvas");
+  canvas.width = 32;
+  canvas.height = 32;
+  const context = canvas.getContext("2d");
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, 64, 32);
+
+  context.fillStyle = "#000000";
+  context.font = "20px Arial";
+  context.fillText("T", 10, 25);
+
+  return new THREE.CanvasTexture(canvas);
 }
 function getTruckFrontTexture() {
-      const canvas = document.createElement("canvas");
-      canvas.width = 32;
-      canvas.height = 32;
-      const context = canvas.getContext("2d");
-    
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, 32, 32);
-    
-      context.fillStyle = "#000000";
-      context.fillRect(0, 5, 32, 10);
-    
-      return new THREE.CanvasTexture(canvas);
+  const canvas = document.createElement("canvas");
+  canvas.width = 32;
+  canvas.height = 32;
+  const context = canvas.getContext("2d");
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, 32, 32);
+
+  context.fillStyle = "#000000";
+  context.fillRect(0, 5, 32, 10);
+
+  return new THREE.CanvasTexture(canvas);
 }
-    
+
 function getTruckSideTexture() {
-      const canvas = document.createElement("canvas");
-      canvas.width = 32;
-      canvas.height = 32;
-      const context = canvas.getContext("2d");
-    
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, 32, 32);
-    
-      context.fillStyle = "#000000";
-      context.fillRect(17, 5, 15, 10);
-    
-      return new THREE.CanvasTexture(canvas);
+  const canvas = document.createElement("canvas");
+  canvas.width = 32;
+  canvas.height = 32;
+  const context = canvas.getContext("2d");
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, 32, 32);
+
+  context.fillStyle = "#000000";
+  context.fillRect(17, 5, 15, 10);
+
+  return new THREE.CanvasTexture(canvas);
 }
-  
-  function Truck() {
-    const truck = new THREE.Group();
-    const color = pickRandom(vehicleColors);
-  
-    const base = new THREE.Mesh(
-      new THREE.BoxGeometry(100, 25, 5),
-      new THREE.MeshLambertMaterial({ color: 0xb4c6fc })
-    );
-    base.position.z = 10;
-    truck.add(base);
-    const cargotexture = getCargotextrue();
-    cargotexture.center = new THREE.Vector2(0.5, 0.5);
-    const cargotexture2 = getCargotextrue2();
-    cargotexture2.center = new THREE.Vector2(0.5, 0.5);
-    cargotexture2.rotation = -Math.PI / 2;
-    
-  
-    const cargo = new THREE.Mesh(
-      new THREE.BoxGeometry(75, 35, 40),
-      [ new THREE.MeshLambertMaterial({ color: 0xffffff}), 
-        new THREE.MeshLambertMaterial({ color: 0xffffff, map: cargotexture2 }), 
-        new THREE.MeshLambertMaterial({ color: 0xffffff,map: cargotexture } ), 
-        new THREE.MeshLambertMaterial({ color: 0xffffff, map: cargotexture  }), 
-        new THREE.MeshLambertMaterial({ color: 0xffffff}), 
-        new THREE.MeshLambertMaterial({color: 0xffffff})
-        
-      ]);
-    cargo.position.x = -15;
-    cargo.position.z = 30;
-    cargo.castShadow = true;
-    cargo.receiveShadow = true;
-    truck.add(cargo);
-  
-    const truckFrontTexture = getTruckFrontTexture();
-    truckFrontTexture.center = new THREE.Vector2(0.5, 0.5);
-    truckFrontTexture.rotation = Math.PI / 2;
-  
-    const truckLeftTexture = getTruckSideTexture();
-    truckLeftTexture.flipY = false;
-  
-    const truckRightTexture = getTruckSideTexture();
-  
-    const cabin = new THREE.Mesh(new THREE.BoxGeometry(25, 30, 30), [
-      new THREE.MeshLambertMaterial({ color, map: truckFrontTexture }),
-      new THREE.MeshLambertMaterial({ color }), // back
-      new THREE.MeshLambertMaterial({ color, map: truckLeftTexture }),
-      new THREE.MeshLambertMaterial({ color, map: truckRightTexture }),
-      new THREE.MeshLambertMaterial({ color }), // top
-      new THREE.MeshLambertMaterial({ color }) // bottom
+
+function Truck() {
+  const truck = new THREE.Group();
+  const color = pickRandom(vehicleColors);
+
+  const base = new THREE.Mesh(
+    new THREE.BoxGeometry(100, 25, 5),
+    new THREE.MeshLambertMaterial({ color: 0xb4c6fc })
+  );
+  base.position.z = 10;
+  truck.add(base);
+  const cargotexture = getCargotextrue();
+  cargotexture.center = new THREE.Vector2(0.5, 0.5);
+  const cargotexture2 = getCargotextrue2();
+  cargotexture2.center = new THREE.Vector2(0.5, 0.5);
+  cargotexture2.rotation = -Math.PI / 2;
+
+
+  const cargo = new THREE.Mesh(
+    new THREE.BoxGeometry(75, 35, 40),
+    [new THREE.MeshLambertMaterial({ color: 0xffffff }),
+    new THREE.MeshLambertMaterial({ color: 0xffffff, map: cargotexture2 }),
+    new THREE.MeshLambertMaterial({ color: 0xffffff, map: cargotexture }),
+    new THREE.MeshLambertMaterial({ color: 0xffffff, map: cargotexture }),
+    new THREE.MeshLambertMaterial({ color: 0xffffff }),
+    new THREE.MeshLambertMaterial({ color: 0xffffff })
+
     ]);
-    cabin.position.x = 40;
-    cabin.position.z = 20;
-    cabin.castShadow = true;
-    cabin.receiveShadow = true;
-    truck.add(cabin);
-  
-    const backWheel = Wheel();
-    backWheel.position.x = -30;
-    truck.add(backWheel);
-  
-    const middleWheel = Wheel();
-    middleWheel.position.x = 10;
-    truck.add(middleWheel);
-  
-    const frontWheel = Wheel();
-    frontWheel.position.x = 38;
-    truck.add(frontWheel);
-    const denL = new THREE.Mesh(
-        new THREE.SphereGeometry(6, 60, 64),
-        new THREE.MeshBasicMaterial({ color: 0xFFFF00 })
-    );
-    denL.position.set(50, -8, 12);
-    truck.add(denL);
-    
-    
-    const denR = new THREE.Mesh(
-        new THREE.SphereGeometry(6, 60, 64), 
-        new THREE.MeshBasicMaterial({ color: 0xFFFF00 }) 
-    );
-    denR.position.set(50, 8, 12);
-    truck.add(denR);
-  
-    return truck;
+  cargo.position.x = -15;
+  cargo.position.z = 30;
+  cargo.castShadow = true;
+  cargo.receiveShadow = true;
+  truck.add(cargo);
+
+  const truckFrontTexture = getTruckFrontTexture();
+  truckFrontTexture.center = new THREE.Vector2(0.5, 0.5);
+  truckFrontTexture.rotation = Math.PI / 2;
+
+  const truckLeftTexture = getTruckSideTexture();
+  truckLeftTexture.flipY = false;
+
+  const truckRightTexture = getTruckSideTexture();
+
+  const cabin = new THREE.Mesh(new THREE.BoxGeometry(25, 30, 30), [
+    new THREE.MeshLambertMaterial({ color, map: truckFrontTexture }),
+    new THREE.MeshLambertMaterial({ color }), // back
+    new THREE.MeshLambertMaterial({ color, map: truckLeftTexture }),
+    new THREE.MeshLambertMaterial({ color, map: truckRightTexture }),
+    new THREE.MeshLambertMaterial({ color }), // top
+    new THREE.MeshLambertMaterial({ color }) // bottom
+  ]);
+  cabin.position.x = 40;
+  cabin.position.z = 20;
+  cabin.castShadow = true;
+  cabin.receiveShadow = true;
+  truck.add(cabin);
+
+  const backWheel = Wheel();
+  backWheel.position.x = -30;
+  truck.add(backWheel);
+
+  const middleWheel = Wheel();
+  middleWheel.position.x = 10;
+  truck.add(middleWheel);
+
+  const frontWheel = Wheel();
+  frontWheel.position.x = 38;
+  truck.add(frontWheel);
+  const denL = new THREE.Mesh(
+    new THREE.SphereGeometry(6, 60, 64),
+    new THREE.MeshBasicMaterial({ color: 0xFFFF00 })
+  );
+  denL.position.set(50, -8, 12);
+  truck.add(denL);
+
+
+  const denR = new THREE.Mesh(
+    new THREE.SphereGeometry(6, 60, 64),
+    new THREE.MeshBasicMaterial({ color: 0xFFFF00 })
+  );
+  denR.position.set(50, 8, 12);
+  truck.add(denR);
+
+  return truck;
 }
-  
+
 
 
 // -----------------------------------------Ship------------------------------
@@ -789,281 +814,275 @@ function Duck() {
 }
 
 function createFlagTexture() {
-      const canvas = document.createElement('canvas');
-      canvas.width = 256;
-      canvas.height = 128;
-      const ctx = canvas.getContext('2d');
-  
-   
-      ctx.fillStyle = "#ff0000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-    
-      ctx.fillStyle = "#ffff00";
-      drawStar(ctx, canvas.width / 2, canvas.height / 2, 5, 40, 15);
-  
-  
-      return new THREE.CanvasTexture(canvas);
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+
+
+  ctx.fillStyle = "#ff0000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+
+  ctx.fillStyle = "#ffff00";
+  drawStar(ctx, canvas.width / 2, canvas.height / 2, 5, 40, 15);
+
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+
+function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+  let rot = (Math.PI / 2) * 3;
+  let x = cx;
+  let y = cy;
+  let step = Math.PI / spikes;
+
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - outerRadius);
+  for (let i = 0; i < spikes; i++) {
+    x = cx + Math.cos(rot) * outerRadius;
+    y = cy + Math.sin(rot) * outerRadius;
+    ctx.lineTo(x, y);
+    rot += step;
+
+    x = cx + Math.cos(rot) * innerRadius;
+    y = cy + Math.sin(rot) * innerRadius;
+    ctx.lineTo(x, y);
+    rot += step;
   }
-  
-  
-  function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
-      let rot = (Math.PI / 2) * 3;
-      let x = cx;
-      let y = cy;
-      let step = Math.PI / spikes;
-  
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - outerRadius);
-      for (let i = 0; i < spikes; i++) {
-          x = cx + Math.cos(rot) * outerRadius;
-          y = cy + Math.sin(rot) * outerRadius;
-          ctx.lineTo(x, y);
-          rot += step;
-  
-          x = cx + Math.cos(rot) * innerRadius;
-          y = cy + Math.sin(rot) * innerRadius;
-          ctx.lineTo(x, y);
-          rot += step;
-      }
-      ctx.closePath();
-      ctx.fill();
-  }
-  
-  function ship() {
-    const ship = new THREE.Group();
-  
-    // ----- Thân tàu (các khúc gỗ) -----
-    const woodColor = new THREE.Color(0xDF6F06);
-    const woodMaterial = new THREE.MeshLambertMaterial({ 
-      color: woodColor, 
-      transparent: true, 
-      opacity: 0.8 
-    });
-  
-    const woodPositions = [0, 12, -12, 22, -22];
-    woodPositions.forEach(x => {
-      const wood = new THREE.Mesh(
-        new THREE.CylinderGeometry(7, 7, 120, 32),
-        woodMaterial.clone()
-      );
-      wood.position.x = x;
-      wood.castShadow = true;
-      wood.receiveShadow = true;
-      ship.add(wood);
-    });
-  
-    // ----- Cột cờ -----
-    const pole = new THREE.Mesh(
-      new THREE.CylinderGeometry(1, 1, 50, 32),
-      new THREE.MeshStandardMaterial({ color: 0x8B5A2B })
+  ctx.closePath();
+  ctx.fill();
+}
+
+function ship() {
+  const ship = new THREE.Group();
+
+  // ----- Thân tàu (các khúc gỗ) -----
+  const woodColor = new THREE.Color(0xDF6F06);
+  const woodMaterial = new THREE.MeshLambertMaterial({
+    color: woodColor,
+    transparent: true,
+    opacity: 0.8
+  });
+
+  const woodPositions = [0, 12, -12, 22, -22];
+  woodPositions.forEach(x => {
+    const wood = new THREE.Mesh(
+      new THREE.CylinderGeometry(7, 7, 120, 32),
+      woodMaterial.clone()
     );
-    pole.position.z = 25;
-    pole.rotation.x = Math.PI / 2;
-    pole.castShadow = true;
-    ship.add(pole);
-  
-    // ----- Lá cờ -----
-    const flagGeometry = new THREE.PlaneGeometry(20, 10);
-    const flagMaterial = new THREE.MeshStandardMaterial({ 
-      map: createFlagTexture(), 
-      side: THREE.DoubleSide 
-    });
-    const flag = new THREE.Mesh(flagGeometry, flagMaterial);
-    flag.position.set(10, 0, 45);
-    flag.rotation.x = Math.PI / 2;
-    flag.castShadow = true;
-    ship.add(flag);
-  
-    return ship;
-  }
-  
-  // Tạo tàu
-  // function ship() {
-  //   const ship = new THREE.Group();
-  
-  //   const wood1 = new THREE.Mesh(
-  //     new THREE.CylinderGeometry(7, 7, 120, 32),
-  //     new THREE.MeshLambertMaterial({ 
-  //       color: 0xDF6F06, 
-  //       roughness: 0.8,
-  //       opacity: 0.8 
-  //     })
-  //   );
-  //   wood1.castShadow = true;
-  //   wood1.receiveShadow = true;
-  //   ship.add(wood1);
-  //   const wood2 = new THREE.Mesh(
-  //     new THREE.CylinderGeometry(5, 5, 120, 32),
-  //     new THREE.MeshLambertMaterial({ 
-  //       color: new THREE.Color(0xDF6F06), 
-  //       transparent: true,
-  //       opacity: 0.8 
-  //     })
-  //   );
-  //   wood2.position.x = 12;
-  //   wood2.castShadow = true;
-  //   wood2.receiveShadow = true;
-  //   ship.add(wood2);
-  //   const wood3 = new THREE.Mesh(
-  //     new THREE.CylinderGeometry(7, 7, 120, 32),
-  //     new THREE.MeshLambertMaterial({ 
-  //       color: new THREE.Color(0xDF6F06),
-  //       transparent: true,
-  //       opacity: 0.8 
-  //     })
-  //   );
-  //   wood3.position.x = -12;
-  //   wood3.castShadow = true;
-  //   wood3.receiveShadow = true;
-  //   ship.add(wood3);
-  
-  //   const wood4 = new THREE.Mesh(
-  //     new THREE.CylinderGeometry(7, 7, 120, 32),
-  //     new THREE.MeshLambertMaterial({ 
-  //       color: new THREE.Color(0xDF6F06),
-  //       transparent: true,
-  //       opacity: 0.8 
-  //     })
-  //   );
-  //   wood4.position.x = 22;
-  //   wood4.castShadow = true;
-  //   wood4.receiveShadow = true;
-  //   ship.add(wood4);
-  
-  //   const wood5 = new THREE.Mesh(
-  //     new THREE.CylinderGeometry(7, 7, 120, 32),
-  //     new THREE.MeshLambertMaterial({ 
-  //       color: new THREE.Color(0xDF6F06), 
-  //       transparent: true,
-  //       opacity: 0.8 
-  //     })
-  //   );
-  //   wood5.position.x = -22;
-  //   wood5.castShadow = true;
-  //   wood5.receiveShadow = true;
-  //   ship.add(wood5);
-  
-  
-  // const flagGeometry = new THREE.PlaneGeometry(20, 10);
-  // const flagMaterial = new THREE.MeshStandardMaterial({ 
-  //     map: createFlagTexture(), 
-  //     side: THREE.DoubleSide 
-  // });
-  // const flag = new THREE.Mesh(flagGeometry, flagMaterial);
-  // flag.position.set(10,0, 45);
-  // flag.rotation.x = Math.PI / 2;  
-  // ship.add(flag);
-  
-  
-  // const pole = new THREE.Mesh(
-  //     new THREE.CylinderGeometry(1, 1, 50, 32),
-  //     new THREE.MeshStandardMaterial({ color: 0x8B5A2B })
-  // );
-  // pole.position.z = 25;
-  // pole.rotation.x = Math.PI / 2;
-  // ship.add(pole);
-  
-  //   return ship;
-    
-  // }
+    wood.position.x = x;
+    wood.castShadow = true;
+    wood.receiveShadow = true;
+    ship.add(wood);
+  });
+
+  // ----- Cột cờ -----
+  const pole = new THREE.Mesh(
+    new THREE.CylinderGeometry(1, 1, 50, 32),
+    new THREE.MeshStandardMaterial({ color: 0x8B5A2B })
+  );
+  pole.position.z = 25;
+  pole.rotation.x = Math.PI / 2;
+  pole.castShadow = true;
+  ship.add(pole);
+
+  // ----- Lá cờ -----
+  const flagGeometry = new THREE.PlaneGeometry(20, 10);
+  const flagMaterial = new THREE.MeshStandardMaterial({
+    map: createFlagTexture(),
+    side: THREE.DoubleSide
+  });
+  const flag = new THREE.Mesh(flagGeometry, flagMaterial);
+  flag.position.set(10, 0, 45);
+  flag.rotation.x = Math.PI / 2;
+  flag.castShadow = true;
+  ship.add(flag);
+
+  return ship;
+}
+
+// Tạo tàu
+// function ship() {
+//   const ship = new THREE.Group();
+
+//   const wood1 = new THREE.Mesh(
+//     new THREE.CylinderGeometry(7, 7, 120, 32),
+//     new THREE.MeshLambertMaterial({ 
+//       color: 0xDF6F06, 
+//       roughness: 0.8,
+//       opacity: 0.8 
+//     })
+//   );
+//   wood1.castShadow = true;
+//   wood1.receiveShadow = true;
+//   ship.add(wood1);
+//   const wood2 = new THREE.Mesh(
+//     new THREE.CylinderGeometry(5, 5, 120, 32),
+//     new THREE.MeshLambertMaterial({ 
+//       color: new THREE.Color(0xDF6F06), 
+//       transparent: true,
+//       opacity: 0.8 
+//     })
+//   );
+//   wood2.position.x = 12;
+//   wood2.castShadow = true;
+//   wood2.receiveShadow = true;
+//   ship.add(wood2);
+//   const wood3 = new THREE.Mesh(
+//     new THREE.CylinderGeometry(7, 7, 120, 32),
+//     new THREE.MeshLambertMaterial({ 
+//       color: new THREE.Color(0xDF6F06),
+//       transparent: true,
+//       opacity: 0.8 
+//     })
+//   );
+//   wood3.position.x = -12;
+//   wood3.castShadow = true;
+//   wood3.receiveShadow = true;
+//   ship.add(wood3);
+
+//   const wood4 = new THREE.Mesh(
+//     new THREE.CylinderGeometry(7, 7, 120, 32),
+//     new THREE.MeshLambertMaterial({ 
+//       color: new THREE.Color(0xDF6F06),
+//       transparent: true,
+//       opacity: 0.8 
+//     })
+//   );
+//   wood4.position.x = 22;
+//   wood4.castShadow = true;
+//   wood4.receiveShadow = true;
+//   ship.add(wood4);
+
+//   const wood5 = new THREE.Mesh(
+//     new THREE.CylinderGeometry(7, 7, 120, 32),
+//     new THREE.MeshLambertMaterial({ 
+//       color: new THREE.Color(0xDF6F06), 
+//       transparent: true,
+//       opacity: 0.8 
+//     })
+//   );
+//   wood5.position.x = -22;
+//   wood5.castShadow = true;
+//   wood5.receiveShadow = true;
+//   ship.add(wood5);
+
+
+// const flagGeometry = new THREE.PlaneGeometry(20, 10);
+// const flagMaterial = new THREE.MeshStandardMaterial({ 
+//     map: createFlagTexture(), 
+//     side: THREE.DoubleSide 
+// });
+// const flag = new THREE.Mesh(flagGeometry, flagMaterial);
+// flag.position.set(10,0, 45);
+// flag.rotation.x = Math.PI / 2;  
+// ship.add(flag);
+
+
+// const pole = new THREE.Mesh(
+//     new THREE.CylinderGeometry(1, 1, 50, 32),
+//     new THREE.MeshStandardMaterial({ color: 0x8B5A2B })
+// );
+// pole.position.z = 25;
+// pole.rotation.x = Math.PI / 2;
+// ship.add(pole);
+
+//   return ship;
+
+// }
 //----------------------------Model------------------------------
-let model1, model2,model3,model4,model5,model6,model7,model8,model9 ;
+
+function enableShadowForObject(object) {
+  object.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+}
+let model, model1, model2, model3, model4, model5, model6, model7, model8, model9,model10;
 const loader = new GLTFLoader();
 
 
 // Load model 1
+loader.load('model/Lily pad.glb', function (gltf) {
+  model10 = gltf.scene;
+  model10.scale.set(3, 3, 3);
+  model10.rotation.set(Math.PI / 2, Math.PI / 4, 0);
+  model10.position.set(60, 0, 0);
+  enableShadowForObject(model10);
+  scene.add(model10);
+});
+loader.load('model/Water lilies.glb', function (gltf) {
+  model9 = gltf.scene;
+  model9.scale.set(3, 3, 3);
+  model9.rotation.set(Math.PI / 2, Math.PI / 4, 0);
+  model9.position.set(-80, -50, 2);
+  enableShadowForObject(model9);
+  scene.add(model9);
+});
 
-loader.load('model/Crane.glb', function(gltf) {
+loader.load('model/Crane.glb', function (gltf) {
   model1 = gltf.scene;
   model1.scale.set(17, 17, 17);
   model1.rotation.set(Math.PI / 2, Math.PI / 4, 0);
   model1.position.set(-235, 120, 0);
-  model1.traverse(function(node) {
-    if (node.isMesh) {
-      node.castShadow = true;     // Đổ bóng
-      node.receiveShadow = true;  // Nhận bóng (nếu cần)
-    }
-  });
+  enableShadowForObject(model1);
   scene.add(model1);
 });
-loader.load('model/Crane.glb', function(gltf) {
-  model1 = gltf.scene;
-  model1.scale.set(17, 17, 17);
-  model1.rotation.set(Math.PI / 2, 0, 0);
-  model1.position.set(-420, 70, 0);
-  model1.traverse(function(node) {
-    if (node.isMesh) {
-      node.castShadow = true;     // Đổ bóng
-      node.receiveShadow = true;  // Nhận bóng (nếu cần)
-    }
-  });
-  scene.add(model1);
+loader.load('model/Crane.glb', function (gltf) {
+  model = gltf.scene;
+  model.scale.set(17, 17, 17);
+  model.rotation.set(Math.PI / 2, 0, 0);
+  model.position.set(-420, 70, 0);
+  enableShadowForObject(model);
+  scene.add(model);
 });
-loader.load('model/Building_1.glb', function(gltf) {
+loader.load('model/Building_1.glb', function (gltf) {
   model4 = gltf.scene;
   model4.scale.set(100, 100, 100);
   model4.rotation.set(Math.PI / 2, -Math.PI / 2, 0);
   model4.position.set(-450, -150, 0);
-  model4.traverse(function(node) {
-    if (node.isMesh) {
-      node.castShadow = true;     // Đổ bóng
-      node.receiveShadow = true;  // Nhận bóng (nếu cần)
-    }
-  });
+  enableShadowForObject(model4);
   scene.add(model4);
 });
 
-loader.load('model/Building_2.glb', function(gltf) {
+loader.load('model/Building_2.glb', function (gltf) {
   model5 = gltf.scene;
   model5.scale.set(100, 100, 100);
   model5.rotation.set(Math.PI / 2, -Math.PI / 2, 0);
   model5.position.set(-450, -40, 0);
-  model5.traverse(function(node) {
-    if (node.isMesh) {
-      node.castShadow = true;     // Đổ bóng
-      node.receiveShadow = true;  // Nhận bóng (nếu cần)
-    }
-  });
+  enableShadowForObject(model5);
   scene.add(model5);
 });
 
 
 // Load model 2
-loader.load('model/Building_3.glb', function(gltf) {
+loader.load('model/Building_3.glb', function (gltf) {
   model2 = gltf.scene;
   model2.scale.set(80, 80, 80); // có thể điều chỉnh khác với model1
   model2.rotation.set(Math.PI / 2, -Math.PI / 1.5, 0);
   model2.position.set(-380, 200, 0); // đặt xa hơn để không bị chồng lên nhau
-  model2.traverse(function(node) {
-  if (node.isMesh) {
-      node.castShadow = true;     // Đổ bóng
-      node.receiveShadow = true;  // Nhận bóng (nếu cần)
-    }
-  });
-  
+  enableShadowForObject(model2);
   scene.add(model2);
 });
 
-loader.load('model/Small_Building.glb', function(gltf) {
+loader.load('model/Small_Building.glb', function (gltf) {
   model3 = gltf.scene;
   model3.scale.set(100, 100, 100);
   model3.rotation.set(Math.PI / 2, -Math.PI / 1.5, 0);
-  model3.position.set(-350,300, 0);
-  model3.traverse(function(node) {
-    if (node.isMesh) {
-      node.castShadow = true;     // Đổ bóng
-      node.receiveShadow = true;  // Nhận bóng (nếu cần)
-    }
-  });
+  model3.position.set(-350, 300, 0);
+  enableShadowForObject(model3);
   scene.add(model3);
 });
-loader.load('model/Large_Building.glb', function(gltf) {
+loader.load('model/Large_Building.glb', function (gltf) {
   model6 = gltf.scene;
   model6.scale.set(100, 100, 100);
-  model6.rotation.set(Math.PI / 2,0, 0);
-  model6.position.set(0,440, 0);
-  model6.traverse(function(node) {
+  model6.rotation.set(Math.PI / 2, 0, 0);
+  model6.position.set(0, 440, 0);
+  model6.traverse(function (node) {
     if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
       node.receiveShadow = true;  // Nhận bóng (nếu cần)
@@ -1071,27 +1090,12 @@ loader.load('model/Large_Building.glb', function(gltf) {
   });
   scene.add(model6);
 });
-loader.load('model/Large_Building.glb', function(gltf) {
+loader.load('model/Large_Building.glb', function (gltf) {
   model6 = gltf.scene;
   model6.scale.set(100, 100, 100);
-  model6.rotation.set(Math.PI / 2,-Math.PI/2, 0);
-  model6.position.set(450,0, 0);
-  model6.traverse(function(node) {
-    if (node.isMesh) {
-      node.castShadow = true;     // Đổ bóng
-      node.receiveShadow = true;  // Nhận bóng (nếu cần)
-    }
-  });
-  scene.add(model6);
-});
-
-
-loader.load('model/SmallBuilding_1.glb', function(gltf) {
-  model6 = gltf.scene;
-  model6.scale.set(100, 100, 100);
-  model6.rotation.set(Math.PI / 2,-Math.PI/1.2, 0);
-  model6.position.set(-165,400, 0);
-  model6.traverse(function(node) {
+  model6.rotation.set(Math.PI / 2, -Math.PI / 2, 0);
+  model6.position.set(450, 0, 0);
+  model6.traverse(function (node) {
     if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
       node.receiveShadow = true;  // Nhận bóng (nếu cần)
@@ -1100,12 +1104,27 @@ loader.load('model/SmallBuilding_1.glb', function(gltf) {
   scene.add(model6);
 });
 
-loader.load('model/SmallBuilding_2.glb', function(gltf) {
+
+loader.load('model/SmallBuilding_1.glb', function (gltf) {
+  model6 = gltf.scene;
+  model6.scale.set(100, 100, 100);
+  model6.rotation.set(Math.PI / 2, -Math.PI / 1.2, 0);
+  model6.position.set(-165, 400, 0);
+  model6.traverse(function (node) {
+    if (node.isMesh) {
+      node.castShadow = true;     // Đổ bóng
+      node.receiveShadow = true;  // Nhận bóng (nếu cần)
+    }
+  });
+  scene.add(model6);
+});
+
+loader.load('model/SmallBuilding_2.glb', function (gltf) {
   model7 = gltf.scene;
   model7.scale.set(100, 100, 100);
-  model7.rotation.set(Math.PI / 2,Math.PI/1.2, 0);
-  model7.position.set(170,400, 0);
-  model7.traverse(function(node) {
+  model7.rotation.set(Math.PI / 2, Math.PI / 1.2, 0);
+  model7.position.set(170, 400, 0);
+  model7.traverse(function (node) {
     if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
       node.receiveShadow = true;  // Nhận bóng (nếu cần)
@@ -1113,12 +1132,12 @@ loader.load('model/SmallBuilding_2.glb', function(gltf) {
   });
   scene.add(model7);
 });
-loader.load('model/Small_Building.glb', function(gltf) {
+loader.load('model/Small_Building.glb', function (gltf) {
   model8 = gltf.scene;
   model8.scale.set(100, 100, 100);
-  model8.rotation.set(Math.PI / 2,-Math.PI/1.2, 0);
-  model8.position.set(-250,370, 0);
-  model8.traverse(function(node) {
+  model8.rotation.set(Math.PI / 2, -Math.PI / 1.2, 0);
+  model8.position.set(-250, 370, 0);
+  model8.traverse(function (node) {
     if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
       node.receiveShadow = true;  // Nhận bóng (nếu cần)
@@ -1126,12 +1145,12 @@ loader.load('model/Small_Building.glb', function(gltf) {
   });
   scene.add(model8);
 });
-loader.load('model/Skyscraper.glb', function(gltf) {
+loader.load('model/Skyscraper.glb', function (gltf) {
   model8 = gltf.scene;
   model8.scale.set(80, 80, 80);
-  model8.rotation.set(Math.PI / 2,Math.PI/1.7, 0);
-  model8.position.set(400,200, 0);
-  model8.traverse(function(node) {
+  model8.rotation.set(Math.PI / 2, Math.PI / 1.7, 0);
+  model8.position.set(400, 200, 0);
+  model8.traverse(function (node) {
     if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
       node.receiveShadow = true;  // Nhận bóng (nếu cần)
@@ -1139,12 +1158,12 @@ loader.load('model/Skyscraper.glb', function(gltf) {
   });
   scene.add(model8);
 });
-loader.load('model/Skyscraper.glb', function(gltf) {
+loader.load('model/Skyscraper.glb', function (gltf) {
   model8 = gltf.scene;
   model8.scale.set(85, 85, 85);
-  model8.rotation.set(Math.PI / 2,Math.PI/2, 0);
-  model8.position.set(420,-180, 0);
-  model8.traverse(function(node) {
+  model8.rotation.set(Math.PI / 2, Math.PI / 2, 0);
+  model8.position.set(420, -180, 0);
+  model8.traverse(function (node) {
     if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
       node.receiveShadow = true;  // Nhận bóng (nếu cần)
@@ -1152,12 +1171,12 @@ loader.load('model/Skyscraper.glb', function(gltf) {
   });
   scene.add(model8);
 });
-loader.load('model/Computer Large.glb', function(gltf) {
+loader.load('model/Computer Large.glb', function (gltf) {
   model8 = gltf.scene;
   model8.scale.set(80, 80, 80);
-  model8.rotation.set(Math.PI / 2,-Math.PI/3, 0);
-  model8.position.set(300,300, 0);
-  model8.traverse(function(node) {
+  model8.rotation.set(Math.PI / 2, -Math.PI / 3, 0);
+  model8.position.set(300, 300, 0);
+  model8.traverse(function (node) {
     if (node.isMesh) {
       node.castShadow = true;     // Đổ bóng
       node.receiveShadow = true;  // Nhận bóng (nếu cần)
@@ -1167,19 +1186,12 @@ loader.load('model/Computer Large.glb', function(gltf) {
 });
 
 let grassPatchOriginal;
-
 loader.load('model/Grass Patch.glb', function (gltf) {
   grassPatchOriginal = gltf.scene;
   grassPatchOriginal.scale.set(50, 50, 50);
   grassPatchOriginal.rotation.set(Math.PI / 2, 0, 0);
   grassPatchOriginal.position.set(0, -480, 10);
-
-  grassPatchOriginal.traverse(function (node) {
-    if (node.isMesh) {
-      node.castShadow = true;
-      node.receiveShadow = true;
-    }
-  });
+  enableShadowForObject(grassPatchOriginal);
 
   scene.add(grassPatchOriginal);
 
@@ -1190,7 +1202,7 @@ loader.load('model/Grass Patch.glb', function (gltf) {
   const grass2 = grassPatchOriginal.clone(true);
   grass2.position.set(-100, -480, 10);
   scene.add(grass2);
- 
+
   const grass3 = grassPatchOriginal.clone(true);
   grass3.position.set(-180, -420, 10);
   scene.add(grass3);
@@ -1216,30 +1228,16 @@ loader.load('model/Grass Patch.glb', function (gltf) {
   grass10.position.set(390, -285, 10);
   scene.add(grass10);
 
-  // Tính toán phạm vi trải cỏ
-//   const minY = -1000;
-// const maxY = -440;
-// const spacingY = 100;
-
-// const minX = -600;
-// const maxX = 600;
-// const spacingX = 50;
-//  for (let x = minX; x <= maxX; x += spacingX) {
-//     for (let y = maxY; y >= minY; y -= spacingY) {
-//       const grass = grassPatchOriginal.clone(true);
-//       grass.position.set(x, y, 10);
-//       scene.add(grass);
-//     }
-//   }
 });
 //----------------------------------Cloud----------------------------------------
 function createCloud() {
   const cloud = new THREE.Group();
 
   const geometry = new THREE.SphereGeometry(7, 16, 32);
-  const material = new THREE.MeshLambertMaterial({ color: 0xffffff,
+  const material = new THREE.MeshLambertMaterial({
+    color: 0xffffff,
     transparent: true
-  }); 
+  });
 
   const part1 = new THREE.Mesh(geometry, material);
   const part2 = new THREE.Mesh(geometry, material);
@@ -1248,7 +1246,7 @@ function createCloud() {
   part1.position.set(0, 0, 0);
   part2.position.set(5, 0, 0);
   part3.position.set(-5, 0, 0);
-  part4.position.set(0, 0,5);
+  part4.position.set(0, 0, 5);
   cloud.add(part1);
   cloud.add(part2);
   cloud.add(part3);
@@ -1305,7 +1303,7 @@ const sunSphere = new THREE.Mesh(
   new THREE.MeshBasicMaterial({ color: 0xffff00 }) // màu vàng
 );
 scene.add(sunSphere);
-
+sunSphere.position.set(100, -300, 400);
 // Thông số quay
 let sunAngle = 0;
 const sunRadius = 700; // bán kính quay quanh tâm
@@ -1313,8 +1311,8 @@ const dayNightSpeed = 0.001;
 scene.background = new THREE.Color(0x87ceeb);
 let waveClock = new THREE.Clock();
 function animation(timestamp) {
-  
-  if (isPaused) return; 
+
+  if (isPaused) return;
 
   if (!lastTimestamp) {
     lastTimestamp = timestamp;
@@ -1322,70 +1320,70 @@ function animation(timestamp) {
     return;
   }
   const elapsed = waveClock.getElapsedTime();
-  if (sunSphere)  {
-     sunAngle += dayNightSpeed;
+  if (sunSphere) {
+    sunAngle += dayNightSpeed;
 
-  const sunX = 0;
-  const sunY = Math.cos(sunAngle) * sunRadius;
-  const sunZ = Math.sin(sunAngle) * sunRadius;
+    const sunX = 0;
+    const sunY = Math.cos(sunAngle) * sunRadius;
+    const sunZ = Math.sin(sunAngle) * sunRadius;
 
-  sunLight.position.set(sunX, sunY, sunZ);
-  sunLight.target.position.set(0, 0, 0);
-  sunLight.target.updateMatrixWorld();
+    sunLight.position.set(sunX, sunY, sunZ);
+    sunLight.target.position.set(0, 0, 0);
+    sunLight.target.updateMatrixWorld();
 
-  sunSphere.position.set(sunX, sunY, sunZ);
+    sunSphere.position.set(sunX, sunY, sunZ);
 
-  // === ĐIỀU CHỈNH ĐỘ SÁNG NGÀY – ĐÊM ===
-  const brightness = Math.max(0, Math.sin(sunAngle));
-  sunLight.intensity = brightness * 2;
-  ambientLight.intensity = 1.0 + 0.3 * brightness;
+    // === ĐIỀU CHỈNH ĐỘ SÁNG NGÀY – ĐÊM ===
+    const brightness = Math.max(0, Math.sin(sunAngle));
+    sunLight.intensity = brightness * 2;
+    ambientLight.intensity = 1.0 + 0.3 * brightness;
 
-  // === CHUYỂN ĐỔI MÀU TRỜI (sáng → tối) ===
-  const skyColor = new THREE.Color().lerpColors(
-    new THREE.Color(0x0d1b2a), // màu đêm
-    new THREE.Color(0x87ceeb), // màu sáng
-    brightness
-  );
-  scene.background = skyColor;
+    // === CHUYỂN ĐỔI MÀU TRỜI (sáng → tối) ===
+    const skyColor = new THREE.Color().lerpColors(
+      new THREE.Color(0x0d1b2a), // màu đêm
+      new THREE.Color(0x87ceeb), // màu sáng
+      brightness
+    );
+    scene.background = skyColor;
   }
   if (clouds) {
-  clouds.forEach((cloud) => {
-  cloud.position.x += cloud.speed;
+    clouds.forEach((cloud) => {
+      cloud.position.x += cloud.speed;
 
-  if (cloud.position.x > 450) {
-    cloud.position.x = -500;
-    cloud.position.y = Math.random() * 150 + 100;
-    cloud.position.z = 320 + Math.random() * 100;
-  }
-});
+      if (cloud.position.x > 450) {
+        cloud.position.x = -500;
+        cloud.position.y = Math.random() * 150 + 100;
+        cloud.position.z = 320 + Math.random() * 100;
+      }
+    });
   }
   if (player2) {
     player2.position.z = Math.sin(elapsed * 1.5) * 0.5;
     player2.rotation.y = Math.sin(elapsed * 1.2) * 0.15;
     player2.rotation.x = Math.cos(elapsed * 0.8) * 0.03;
   }
-  if (duck){
-    duck.position.add(snowmanVelocity);
+  if (duck) {
+    duck.position.add(duckVelocity);
 
-  // Kiểm tra va chạm biên rào ảo (ví dụ vùng hình vuông)
-  const boundary = innerTrackRadius-60; // bán kính vùng chuyển động
+    // Kiểm tra va chạm biên rào ảo (ví dụ vùng hình vuông)
+    const boundary = innerTrackRadius - 60; // bán kính vùng chuyển động
 
-  if (duck.position.x > boundary || duck.position.x < -boundary) {
-    snowmanVelocity.x *= -1; // Đổi hướng trục x
-    duck.position.x = THREE.MathUtils.clamp(duck.position.x, -boundary, boundary);
-  }
+    if (duck.position.x > boundary || duck.position.x < -boundary) {
+      duckVelocity.x *= -1; // Đổi hướng trục x
+      duck.position.x = THREE.MathUtils.clamp(duck.position.x, -boundary, boundary);
+    }
 
-  if (duck.position.y > boundary || duck.position.y < -boundary) {
-    snowmanVelocity.y *= -1; // Đổi hướng trục y
-    duck.position.y = THREE.MathUtils.clamp(duck.position.y, -boundary, boundary);
-  }
+    if (duck.position.y > boundary || duck.position.y < -boundary) {
+      duckVelocity.y *= -1; // Đổi hướng trục y
+      duck.position.y = THREE.MathUtils.clamp(duck.position.y, -boundary, boundary);
+    }
 
-  // Hướng quay theo vận tốc
-  duck.rotation.z = Math.atan2(snowmanVelocity.y, snowmanVelocity.x);
-   const distance = duck.position.distanceTo(player2.position);
-  if (distance < (duckRadius + shipRadius)) {
-    snowmanVelocity.multiplyScalar(-1); // phản lại
-  }
+    // Hướng quay theo vận tốc
+    duck.rotation.z = Math.atan2(duckVelocity.y, duckVelocity.x);
+    const distance = duck.position.distanceTo(player2.position);
+    if (distance < (duckRadius + shipRadius)) {
+      duckVelocity.multiplyScalar(-1); // phản lại
+    }
   }
   const timeDelta = timestamp - lastTimestamp;
   movePlayerCar(timeDelta);
@@ -1415,7 +1413,7 @@ function movePlayerCar(timeDelta) {
 
   player1.position.x = playerX1;
   player1.position.y = playerY1;
-  player1.rotation.z = totalPlayerAngle1- Math.PI / 2;
+  player1.rotation.z = totalPlayerAngle1 - Math.PI / 2;
 
 
 }
@@ -1424,13 +1422,13 @@ duck.position.set(0, 100, 0);
 duck.scale.set(0.3, 0.3, 0.3);
 scene.add(duck);
 
-const snowmanVelocity = new THREE.Vector3(
-  (Math.random() - 0.5) * 2,  
-  (Math.random() - 0.5) * 2,  
-  0                           
+const duckVelocity = new THREE.Vector3(
+  (Math.random() - 0.5) * 2,
+  (Math.random() - 0.5) * 2,
+  0
 );
-const duckRadius = 20; 
-const shipRadius = 50;
+const duckRadius = 15;
+const shipRadius = 45;
 
 enableShadowForObject(duck);
 
@@ -1438,7 +1436,7 @@ const player1 = Truck();
 scene.add(player1);
 
 const player2 = ship();
-player2.position.set(0,0,0);
+player2.position.set(0, 0, 0);
 
 scene.add(player2);
 
@@ -1448,14 +1446,7 @@ scene.add(playerCar);
 renderer.render(scene, camera);
 
 
-function enableShadowForObject(object) {
-  object.traverse((child) => {
-    if (child.isMesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
-}
+
 
 function reset() {
   playerAngleMoved = 0;
@@ -1491,10 +1482,10 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
-    
-    renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+  controls.update();
+
+  renderer.render(scene, camera);
 }
 animate();
 
